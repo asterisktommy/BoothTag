@@ -41,6 +41,24 @@
   const loadOpts = () =>
     stGet(KEY.opts, null).then((opts) => Object.assign({}, DEFAULTS, opts || {}));
 
+  // 現在入力欄に表示されているタグを収集（再追加を避けて余計な送信を抑える）
+  function collectExistingTags(input) {
+    const holder = input.closest("#item_tag") || input.parentElement || document;
+    const out = new Set();
+    const candidates = holder.querySelectorAll(
+      "[data-tag-name], .js-item-tags-array-tag, .c-tag, .tag, .tag-label"
+    );
+    candidates.forEach((el) => {
+      const txt = (el.getAttribute("data-tag-name") || el.textContent || "").trim();
+      if (txt) out.add(txt);
+    });
+    return out;
+  }
+
+  // タグ入力速度（入力間隔 / Enter 確定待ち）
+  const INPUT_INTERVAL_MS = 20;
+  const ENTER_DELAY_MS = 80;
+
   function press(el, key) {
     el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
     el.dispatchEvent(new KeyboardEvent("keyup",   { key, bubbles: true }));
@@ -56,10 +74,10 @@
         if (i < tag.length) {
           el.value += tag[i++];
           el.dispatchEvent(new Event("input", { bubbles: true }));
-          setTimeout(step, 10);
+          setTimeout(step, INPUT_INTERVAL_MS);
         } else {
-          press(el, "Enter");      // チップ化
-          setTimeout(resolve, 25); // 確定待ち
+          press(el, "Enter");           // チップ化
+          setTimeout(resolve, ENTER_DELAY_MS); // 確定待ち
         }
       }
       step();
@@ -404,12 +422,14 @@
         onConfirm: async (selectedTags) => {
           if (!selectedTags.length) return;
           const uniq = uniqKeep(selectedTags);
+          const existing = collectExistingTags(input);
+          const toAdd = uniq.filter((t) => !existing.has(t));
 
           // ここで上限チェック（ブロック）
-          const ok = checkLimitAndNotify(opts.softTagLimit, uniq.length);
+          const ok = checkLimitAndNotify(opts.softTagLimit, toAdd.length);
           if (!ok) return;
 
-          await addTags(input, uniq);
+          await addTags(input, toAdd);
           await stSet({ [KEY.item(id)]: uniq, [KEY.recent]: uniq });
         },
         onSavedOptions: () => {
@@ -421,12 +441,14 @@
               onConfirm: async (tags) => {
                 if (!tags.length) return;
                 const uniq = uniqKeep(tags);
+                const existing = collectExistingTags(input);
+                const toAdd = uniq.filter((t) => !existing.has(t));
 
                 // 再チェック
-                const ok = checkLimitAndNotify(o2.softTagLimit, uniq.length);
+                const ok = checkLimitAndNotify(o2.softTagLimit, toAdd.length);
                 if (!ok) return;
 
-                await addTags(input, uniq);
+                await addTags(input, toAdd);
                 await stSet({ [KEY.item(id)]: uniq, [KEY.recent]: uniq });
               }
             });
