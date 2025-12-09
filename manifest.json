@@ -1,0 +1,18 @@
+{
+"manifest_version": 3,
+"name": "BOOTH Tag Helper (1-item)",
+"version": "0.1.0",
+"description": "BOOTH商品編集ページでタグの記憶・プリセット・一括投入を提供（1商品向け）",
+"permissions": ["storage"],
+"host_permissions": [
+"https://manage.booth.pm/items/*/edit"
+],
+"content_scripts": [
+{
+"matches": ["https://manage.booth.pm/items/*/edit"],
+"js": ["content.js"],
+"run_at": "document_idle"
+}
+],
+"options_page": "options.html"
+}

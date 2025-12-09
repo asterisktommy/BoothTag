@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>BOOTH Tag Helper 設定</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
+textarea { width: 100%; height: 160px; }
+label { display:block; margin: 12px 0 6px; font-weight: 600; }
+input[type=number]{ width: 120px; }
+.row{ display:flex; gap:12px; align-items:center; }
+.hint{ color:#666; font-size:12px; }
+button{ padding:6px 12px; }
+</style>
+</head>
+<body>
+<h1>BOOTH Tag Helper 設定</h1>
+<div class="row">
+<label for="limit">ソフト上限（警告のみ）</label>
+<input id="limit" type="number" step="1" min="-1" />
+<span class="hint">-1で警告無効。例: 20</span>
+</div>
+
+
+<label for="presets">プリセット（JSON）</label>
+<textarea id="presets"></textarea>
+<div class="hint">例：{"VRCワールド":["VRChat","World"], "配布ツール":["Unity","ツール"]}</div>
+
+
+<div style="margin-top:12px; display:flex; gap:8px;">
+<button id="save">保存</button>
+<button id="reset">初期化</button>
+</div>
+
+
+<script src="options.js"></script>
+</body>
+</html>
